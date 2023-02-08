@@ -1,11 +1,3 @@
-//This code was written to be easy to understand.
-//Modify this code as you see fit.
-//This code will output data to the Arduino serial monitor.
-//Type commands into the Arduino serial monitor to control the EC circuit.
-//This code was written in the Arduino 2.0 IDE
-//This code was last tested 10/2022
-
-
 #include <SoftwareSerial.h>                           //we have to include the SoftwareSerial library, or else we can't use it
 #define rx 2                                          //define what pin rx is going to be
 #define tx 3                                          //define what pin tx is going to be
@@ -99,6 +91,9 @@ void print_EC_data(void) {                            //this function will pars 
   f_ec= atof(EC);                                     //uncomment this line to convert the char to a float
   //Serial.println("TDS:");
   Serial.println(f_ec);
+
+  //Convert from EC to TDS in ppm
+  // EC_val * (1000/2) = ppm_val
 }
 
 
