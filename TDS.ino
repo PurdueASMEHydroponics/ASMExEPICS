@@ -83,20 +83,22 @@ void print_EC_data(void) {                            //this function will pars 
   SAL = strtok(NULL, ",");                            //let's pars the array at each comma
   GRAV = strtok(NULL, ",");                           //let's pars the array at each comma
 
-  Serial.print("EC:");                                //we now print each value we parsed separately
-  Serial.println(EC);                                 //this is the EC value
+  //Serial.print("EC:");                                //we now print each value we parsed separately
+  //Serial.println(EC);                                 //this is the EC value
 
-  Serial.print("TDS:");                               //we now print each value we parsed separately
-  Serial.println(TDS);                                //this is the TDS value
+  //Serial.print("TDS:");                               //we now print each value we parsed separately
+  //Serial.println(TDS);                                //this is the TDS value
 
-  Serial.print("SAL:");                               //we now print each value we parsed separately
-  Serial.println(SAL);                                //this is the salinity value
+  //Serial.print("SAL:");                               //we now print each value we parsed separately
+  //Serial.println(SAL);                                //this is the salinity value
 
-  Serial.print("GRAV:");                              //we now print each value we parsed separately
-  Serial.println(GRAV);                               //this is the specific gravity
-  Serial.println();                                   //this just makes the output easier to read
+  //Serial.print("GRAV:");                              //we now print each value we parsed separately
+  //Serial.println(GRAV);                               //this is the specific gravity
+  //Serial.println();                                   //this just makes the output easier to read
   
-//f_ec= atof(EC);                                     //uncomment this line to convert the char to a float
+  f_ec= atof(EC);                                     //uncomment this line to convert the char to a float
+  //Serial.println("TDS:");
+  Serial.println(f_ec);
 }
 
 
