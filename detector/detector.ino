@@ -8,7 +8,13 @@ void setup() {
 }
 
 void loop() {
-    Water_level = digitalRead(pin);
+  detector();
+}
+
+
+void detector()
+{
+   Water_level = digitalRead(pin);
 
     if(Water_level == 1)
     {
@@ -16,7 +22,8 @@ void loop() {
     }
     else
     {
-        Serial.println("water Not Detected");
+        Serial.println("Water Not Detected");
     }
     delay(1000);
 }
+
