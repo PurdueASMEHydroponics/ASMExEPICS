@@ -1,0 +1,12 @@
+#ifndef tl
+#define tl
+
+#if (ARDUINO >=100)
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
+long getRandom();
+
+#endif
