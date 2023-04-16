@@ -1,4 +1,6 @@
 # ASMExEPICS
 For ASMExEPICS Hydroponics Project
 
-Hi marcus was here
+sensorSketches: Individual Sensor Code
+
+sensorLibrary: Overall Sensor Code
