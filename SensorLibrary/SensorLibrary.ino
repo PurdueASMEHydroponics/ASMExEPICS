@@ -5,8 +5,11 @@
 DHT dht(DHT_PIN, DHTTYPE);
 
 void setup() {
-  pinMode(WATER_PIN, INPUT);
   Serial.begin(9600);
+  pinMode(WATER_PIN, INPUT);
+  pinMode(PHUP_PIN, OUTPUT);
+  pinMode(PHDOWN_PIN, OUTPUT);
+  pinMode(NUTRIENT_PIN, OUTPUT);
   dht.begin();
 }
 
@@ -31,6 +34,13 @@ void loop() {
     Serial.print("\n");
   }
   
+  // while()
+  // {
+  //   phUP();
+  // }
+  phUP();
+  phDOWN();
+  nutrients();
   
   
   Serial.print("Humidity: ");
