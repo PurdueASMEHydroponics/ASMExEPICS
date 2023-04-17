@@ -6,6 +6,7 @@
 #define PHUP_PIN 12
 #define PHDOWN_PIN 13
 #define NUTRIENT_PIN 11
+#define IOTRELAY_PIN 7
 
 #include <Arduino.h>
 
@@ -17,4 +18,5 @@ int waterDetect();
 void phUP();
 void phDOWN();
 void nutrients();
+void relay();
 #endif

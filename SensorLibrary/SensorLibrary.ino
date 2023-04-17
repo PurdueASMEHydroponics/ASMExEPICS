@@ -10,6 +10,7 @@ void setup() {
   pinMode(PHUP_PIN, OUTPUT);
   pinMode(PHDOWN_PIN, OUTPUT);
   pinMode(NUTRIENT_PIN, OUTPUT);
+  pinMode(IOTRELAY_PIN, OUTPUT);
   dht.begin();
 }
 
@@ -41,12 +42,13 @@ void loop() {
   //phUP();
   //phDOWN();
   //nutrients();
-  
+  relay(); //turns on grow lights & water pump -> should be on unless nighttime/maintenance
   
   Serial.print("Humidity: ");
   Serial.print(hum);
+  Serial.print(" %");
   Serial.print("\n");
-  Serial.print("%  Temperature: ");
+  Serial.print("Temperature: ");
   Serial.print(temp);
   Serial.print("\n");
   

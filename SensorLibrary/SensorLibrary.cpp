@@ -52,6 +52,11 @@ void nutrients()
   // delay(1000);
   // digitalWrite(PHUP_PIN, LOW);
 }
-
+void relay()
+{
+  digitalWrite(IOTRELAY_PIN, HIGH);
+  // delay(1000);
+  // digitalWrite(PHUP_PIN, LOW);
+}
 
 
