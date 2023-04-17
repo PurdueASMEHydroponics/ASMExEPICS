@@ -17,19 +17,19 @@ float myDHTh()
   return h;
 }
 
-char* waterDetect()
+int waterDetect()
 {
-  static char waterStr[] = "Nor Read";
+  //static char waterStr[] = "Nor Read";
   int waterVal = digitalRead(WATER_PIN);
-  Serial.print(waterVal);
-  if(waterVal == 1)
-  {
-    strcpy(waterStr, "Water Detected");
-  }
-  else
-  {
-    strcpy(waterStr, "NO WATER!!");
-  }
+  //Serial.print(waterVal);
+  // if(waterVal == 1)
+  // {
+  //   strcpy(waterStr, "Water Detected");
+  // }
+  // else
+  // {
+  //   strcpy(waterStr, "NO WATER!!");
+  // }
   
-  return waterStr;
+  return waterVal;
 }

@@ -11,6 +11,6 @@
 //DHT dht(DHT_PIN, DHTTYPE);
 float myDHTf();
 float myDHTh();
-char* waterDetect();
+int waterDetect();
 
 #endif

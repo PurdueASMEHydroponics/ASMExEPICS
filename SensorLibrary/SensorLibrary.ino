@@ -13,15 +13,26 @@ void setup() {
 
 //local vars
 void loop() {
-  delay(250);
+  delay(1000);
 
   float temp = myDHTf();
   float hum = myDHTh();
-  char* waterStr = waterDetect();
+  int waterVal = waterDetect();
+  
+  if(waterVal == 1)
+  {
+    Serial.print("Water Detected");
+    Serial.print("\n");
+  }
+  else
+  { 
+    Serial.print("NO WATER");
+    //Serial.print("Error Code: FFFFF");
+    Serial.print("\n");
+  }
   
   
-  Serial.print(waterStr);
-  Serial.print("\n");
+  
   Serial.print("Humidity: ");
   Serial.print(hum);
   Serial.print("\n");
