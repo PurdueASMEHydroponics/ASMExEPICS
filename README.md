@@ -15,7 +15,9 @@ Nutrients
 
 Control Scripts:
 
+[ATLAS SENSORS]
+{
 pH up/down cases
 add nutrients or dilute cases
 oxygen warning case (easy)
-turn on/off power relay for water pump, grow lights
+}
