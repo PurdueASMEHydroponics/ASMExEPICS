@@ -1,8 +1,3 @@
-# include "SensorLibrary.h"
+#include "sensorLibrary.h"
 
-long getRandom() {
-  int a;
-  
-  a = 4;
-  return a;
-}
+//sensor funcs

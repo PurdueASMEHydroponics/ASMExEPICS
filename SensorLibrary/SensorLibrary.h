@@ -1,12 +1,8 @@
-#ifndef tl
-#define tl
+#ifndef SENSORLIBRARY_H
+#define SENSORLIBRARY_H
+#include <Arduino.h>
 
-#if (ARDUINO >=100)
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
+//func definitions
 
-long getRandom();
 
 #endif
