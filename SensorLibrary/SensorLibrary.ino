@@ -38,9 +38,9 @@ void loop() {
   // {
   //   phUP();
   // }
-  phUP();
-  phDOWN();
-  nutrients();
+  //phUP();
+  //phDOWN();
+  //nutrients();
   
   
   Serial.print("Humidity: ");
