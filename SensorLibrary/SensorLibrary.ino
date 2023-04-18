@@ -35,10 +35,7 @@ void loop() {
     Serial.print("\n");
   }
   
-  // while()
-  // {
-  //   phUP();
-  // }
+  
   //phUP();
   //phDOWN();
   //nutrients();

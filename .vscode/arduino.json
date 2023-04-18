@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "COM5",
+    "programmer": "avrispmkii",
+    "sketch": "sensorLibrary\\sensorLibrary.ino"
+}
