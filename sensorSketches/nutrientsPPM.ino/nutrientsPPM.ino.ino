@@ -72,20 +72,60 @@ void print_EC_data(void) {                            //this function will pars 
 
   char sensorstring_array[30];                        //we make a char array
   char *EC;                                           //char pointer used in string parsing
+  char *TDS;                                          //char pointer used in string parsing
+  char *SAL;                                          //char pointer used in string parsing
+  char *GRAV;                                         //char pointer used in string parsing
   float f_ec;                                         //used to hold a floating point number that is the EC
   
   sensorstring.toCharArray(sensorstring_array, 30);   //convert the string to a char array 
   EC = strtok(sensorstring_array, ",");               //let's pars the array at each comma
+  TDS = strtok(NULL, ",");                            //let's pars the array at each comma
+  SAL = strtok(NULL, ",");                            //let's pars the array at each comma
+  GRAV = strtok(NULL, ",");                           //let's pars the array at each comma
 
   Serial.print("EC:");                                //we now print each value we parsed separately
   Serial.println(EC);                                 //this is the EC value
 
- 
+  Serial.print("TDS:");                               //we now print each value we parsed separately
+  Serial.println(TDS);                                //this is the TDS value
+
+  Serial.print("SAL:");                               //we now print each value we parsed separately
+  Serial.println(SAL);                                //this is the salinity value
+
+  Serial.print("GRAV:");                              //we now print each value we parsed separately
+  Serial.println(GRAV);                               //this is the specific gravity
+  Serial.println();                                   //this just makes the output easier to read
   
-  f_ec= atof(EC);
-  f_ec = f_ec/1.56;                                     //uncomment this line to convert the char to a float
-  Serial.print("Nutrients ppm: ");                                //we now print each value we parsed separately
-  Serial.print(f_ec);                                 //this is the EC value
-  Serial.print("\n"); 
+//f_ec= atof(EC);                                     //uncomment this line to convert the char to a float
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
