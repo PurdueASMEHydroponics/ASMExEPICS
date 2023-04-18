@@ -7,8 +7,8 @@
 #define PHDOWN_PIN 13
 #define NUTRIENT_PIN 11
 #define IOTRELAY_PIN 7
-#define pHrx 0
-#define pHtx 1
+#define pHrx 2
+#define pHtx 3
 
 
 #include <Arduino.h>
@@ -22,4 +22,5 @@ void phUP();
 void phDOWN();
 void nutrients();
 void relay();
+float pH();
 #endif

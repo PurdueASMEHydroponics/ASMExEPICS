@@ -1,15 +1,16 @@
 #include "sensorLibrary.h"
 #include "DHT.h"
+#include <SoftwareSerial.h>  
 
 //sensor funcs
 float myDHTf()
 {
   DHT dht(DHT_PIN, DHTTYPE);
-  float tf = dht.readTemperature(); //farenheit
+  float tf = dht.readTemperature(); 
 
   return tf;
-
 }
+
 float myDHTh()
 {
   DHT dht(DHT_PIN, DHTTYPE);
@@ -59,5 +60,38 @@ void relay()
   // digitalWrite(PHUP_PIN, LOW);
 }
 
+float pH()
+{
+  SoftwareSerial myserial(pHrx, pHtx);
 
+  String inputstring = "";                             
+  String sensorstring = "";                             
+  boolean input_string_complete = false;                
+  boolean sensor_string_complete = false;   
+  float pHval;
+
+
+  if (myserial.available() > 0) {                     
+    char inchar = (char)myserial.read();              
+    sensorstring += inchar;                           
+  if (inchar == '\r') {                             
+      sensor_string_complete = true;                  
+    }
+  }
+
+
+  if (sensor_string_complete == true) {               
+    //Serial.println(sensorstring);                    
+    
+                                                    
+    if (isdigit(sensorstring[0])) {                   
+      pHval = sensorstring.toFloat();
+      return pHval;
+      delay(1000);
+    }
+  }
+
+
+
+}
 
