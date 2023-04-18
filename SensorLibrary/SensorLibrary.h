@@ -7,6 +7,9 @@
 #define PHDOWN_PIN 13
 #define NUTRIENT_PIN 11
 #define IOTRELAY_PIN 7
+#define pHrx 0
+#define pHtx 1
+
 
 #include <Arduino.h>
 
