@@ -77,8 +77,8 @@ void print_EC_data(void) {                            //this function will pars 
   sensorstring.toCharArray(sensorstring_array, 30);   //convert the string to a char array 
   EC = strtok(sensorstring_array, ",");               //let's pars the array at each comma
 
-  Serial.print("EC:");                                //we now print each value we parsed separately
-  Serial.println(EC);                                 //this is the EC value
+  // Serial.print("EC:");                                //we now print each value we parsed separately
+  // Serial.println(EC);                                 //this is the EC value
 
  
   

@@ -2,7 +2,7 @@
 #define SENSORLIBRARY_H
 #define DHT_PIN 8
 #define DHTTYPE DHT11
-#define WATER_PIN 5
+#define WATER_PIN 6
 #define PHUP_PIN 12
 #define PHDOWN_PIN 13
 #define NUTRIENT_PIN 11

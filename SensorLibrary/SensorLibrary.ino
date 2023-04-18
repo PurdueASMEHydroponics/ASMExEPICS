@@ -51,12 +51,12 @@ void loop() {
     Serial.print("\n");
   }
   
-  // phUP();
-  // phDOWN();
-  // nutrients();
+  //phUP();
+  //phDOWN();
+  //nutrients();
 
 
-  relay(); //turns on grow lights & water pump -> should be on unless nighttime/maintenance
+  //relay(); //turns on grow lights & water pump -> should be on unless nighttime/maintenance
   
     if (myserial.available() > 0) {                     
     char inchar = (char)myserial.read();              
