@@ -2,6 +2,7 @@
 #define rx 2                                          //define what pin rx is going to be
 #define tx 3                                          //define what pin tx is going to be
 
+//Marcus made this change 
 SoftwareSerial myserial(rx, tx);                      //define how the soft serial port is going to work
  
 String inputstring = "";                              //a string to hold incoming data from the PC
