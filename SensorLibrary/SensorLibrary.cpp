@@ -20,17 +20,8 @@ float myDHTh()
 
 int waterDetect()
 {
-  //static char waterStr[] = "No Read";
+
   int waterVal = digitalRead(WATER_PIN);
-  //Serial.print(waterVal);
-  // if(waterVal == 1)
-  // {
-  //   strcpy(waterStr, "Water Detected");
-  // }
-  // else
-  // {
-  //   strcpy(waterStr, "NO WATER!!");
-  // }
   
   return waterVal;
 }
@@ -38,14 +29,12 @@ int waterDetect()
 void phUP()
 {
   digitalWrite(PHUP_PIN, HIGH);
-  // delay(1000);
-  // digitalWrite(PHUP_PIN, LOW);
+
 }
 void phDOWN()
 {
   digitalWrite(PHDOWN_PIN, HIGH);
-  // delay(1000);
-  // digitalWrite(PHUP_PIN, LOW);
+  
 }
 void nutrients()
 {

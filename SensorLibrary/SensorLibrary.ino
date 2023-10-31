@@ -19,11 +19,15 @@ void setup() {
   myserial.begin(9600);
   inputstring.reserve(10);
   sensorstring.reserve(30);
+
+  //Pin Setup
   pinMode(WATER_PIN, INPUT);
   pinMode(PHUP_PIN, OUTPUT);
   pinMode(PHDOWN_PIN, OUTPUT);
   pinMode(NUTRIENT_PIN, OUTPUT);
   pinMode(IOTRELAY_PIN, OUTPUT);
+
+  
   //dht.begin();
 }
 
