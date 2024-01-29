@@ -7,11 +7,10 @@
 
 
 #include <SoftwareSerial.h>                           //we have to include the SoftwareSerial library, or else we can't use it
-#define rx 2                                          //define what pin rx is going to be
-#define tx 3                                          //define what pin tx is going to be
-
-SoftwareSerial myserial(rx, tx);                      //define how the soft serial port is going to work
-
+#define tx 2                                          //define what pin rx is going to be
+#define rx 3                                          //define what pin tx is going to be
+                                                      //IF there are problems with the sensor, try switching around rx and tx connections
+SoftwareSerial myserial(tx, rx);                      //define how the soft serial port is going to work
 
 String inputstring = "";                              //a string to hold incoming data from the PC
 String sensorstring = "";                             //a string to hold the data from the Atlas Scientific product
