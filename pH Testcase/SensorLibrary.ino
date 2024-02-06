@@ -91,7 +91,7 @@ void loop() {
     lowI++;
     if(lowI>60){
       Serial.println("Raising pH"); 
-      phUP();
+      // phUP();
       delay(5000); //on for 1 second, accounts for pHup/down concentration
       Serial.println("Pump Off");
       lowI=0; 
@@ -104,7 +104,7 @@ void loop() {
     highI++;
     if(highI>60){
       Serial.println("Lowering pH"); 
-      phDOWN();
+      // phDOWN();
       
       delay(5000); //on for 1 second, accounts for pHup/down concentration
       Serial.println("Pump Off");
