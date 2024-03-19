@@ -4,8 +4,8 @@ CURRENT CODE ON THE SYSTEM
 
 #define relay 13          // Tells Arduino the relay is connected to pin 13
 #define sensorPower 7
+#define threshold 300
 
-int threshold = 300;
 int val = 0;
 int stayOn = 1;
 
@@ -26,7 +26,7 @@ void setup()
   Serial.println("Ready!");
 }
 
-void loop()                  // Loops forever
+void waterDetectionMain()                  // Loops forever
 {
   // digitalWrite(relay, HIGH);   // Turn the relay on (HIGH is the voltage level = 1)
   // delay(10000);                 // Stay ON
@@ -65,7 +65,8 @@ void loop()                  // Loops forever
 
 }
 
-int readSensor(int sensorPin) {
+int readSensor(int sensorPin) 
+{
     digitalWrite(sensorPower, HIGH);    // Turn the sensor ON
     delay(10);                            // wait 10 milliseconds
   if (sensorPin == 1)
