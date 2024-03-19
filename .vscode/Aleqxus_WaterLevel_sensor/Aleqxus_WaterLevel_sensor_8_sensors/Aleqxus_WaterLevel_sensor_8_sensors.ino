@@ -6,7 +6,7 @@ CURRENT CODE ON THE SYSTEM
 #define sensorPower 7
 #define threshold 300
 
-int val = 0;
+int waterVal = 0;
 int stayOn = 1;
 
 void setup()
@@ -71,40 +71,40 @@ int readSensor(int sensorPin)
     delay(10);                            // wait 10 milliseconds
   if (sensorPin == 1)
   {
-    val = analogRead(A0);
+    waterVal = analogRead(A0);
   }
   else if (sensorPin == 2)
   {
-    val = analogRead(A1);
+    waterVal = analogRead(A1);
   }
   else if (sensorPin == 3)
   {
-    val = analogRead(A2);
+    waterVal = analogRead(A2);
   }
   else if (sensorPin == 4)
   {
-    val = analogRead(A3);        // Read the analog value from sensor
+    waterVal = analogRead(A3);        // Read the analog value from sensor
   }
   else if (sensorPin == 5)
   {
-    val = analogRead(A4);
+    waterVal = analogRead(A4);
   }
   else if (sensorPin == 6)
   {
-    val = analogRead(A5);
+    waterVal = analogRead(A5);
   }
   else if (sensorPin == 7)
   {
-    val = analogRead(A7);
+    waterVal = analogRead(A7);
   }
   else
   {
-    val = analogRead(A8);
+    waterVal = analogRead(A8);
   }
 
   else 
     digitalWrite(sensorPower, LOW);        // Turn the sensor OFF
-    return val;                            // send current reading
+    return waterVal;                            // send current reading
 }
 
 //trigger how? 
