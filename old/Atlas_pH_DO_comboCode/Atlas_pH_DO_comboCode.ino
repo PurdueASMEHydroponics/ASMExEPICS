@@ -70,7 +70,7 @@ void setup() {                                        //set up the hardware
 
 
 void serialEvent() {                                  //if the hardware serial port_0 receives a char
-  inputstring = Serial.readStringUntil(13);           //read the string until we see a <CR>
+  inputstring = Serial3.readStringUntil(13);           //read the string until we see a <CR>
   input_string_complete = true;                       //set the flag used to tell if we have received a completed string from the PC
 }
 
@@ -115,8 +115,8 @@ void loop() {                                         //here we go...
 
 //DO code:
 
-if (Serial.available() > 0) {
-    user_bytes_received = Serial.readBytesUntil(13, user_data, sizeof(user_data));
+  if (Serial.available() > 0) {
+      user_bytes_received = Serial.readBytesUntil(13, user_data, sizeof(user_data));
   }
 
   if (user_bytes_received) {
@@ -124,11 +124,10 @@ if (Serial.available() > 0) {
     user_bytes_received = 0;
     memset(user_data, 0, sizeof(user_data));
   }
+
   Serial.print("Dissolved Oxygen: ");
   Serial.println( DO.read_do_percentage());
   delay(1000);
-
-
 }
 
 
