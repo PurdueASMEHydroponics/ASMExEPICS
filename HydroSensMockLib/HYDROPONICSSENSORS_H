@@ -1,0 +1,20 @@
+#ifndef HYDROPONICSSENSORS_H
+#define HYDROPONICSSENSORS_H
+
+#include <Arduino.h>
+
+class HydroponicsSensors {
+  public:
+    HydroponicsSensors();  // Constructor
+
+    void begin();  // Initialize sensors
+    float readPH();  // Read pH sensor
+    float readDO();  // Read Dissolved Oxygen sensor
+    float readEC();  // Read EC sensor
+    float readWaterLevel();  // Read water level sensor
+
+  private:
+    void initializeSensors();  // Helper function to initialize all sensors
+};
+
+#endif
