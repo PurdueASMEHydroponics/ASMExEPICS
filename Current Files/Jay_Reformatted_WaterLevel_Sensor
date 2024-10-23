@@ -1,0 +1,60 @@
+// Defines pins for relay and sensor power
+#define relay 13           // Relay connected to digital pin 13
+#define sensorPower 7      // Sensor power control pin connected to digital pin 7
+
+int threshold = 300;       // Threshold value to trigger relay (water level reading)
+int stayOn = 1;            // Variable to track if relay should stay on or off
+int sensorCount = 4;       // Number of water level sensors used
+int sensorPins[4] = {A0, A1, A2, A3};  // Array storing analog pins for sensors
+
+void setup() {
+  // Initialize relay as an output and sensorPower control
+  pinMode(relay, OUTPUT);    
+  Serial.begin(9600);        // Start serial communication for debug output
+
+  Serial.println("Setting up...");
+  
+  pinMode(sensorPower, OUTPUT);  // Sensor power control set as output
+  digitalWrite(sensorPower, LOW); // Turn sensor power off initially
+
+  Serial.println("Ready!");      // Indicate setup completion
+}
+
+void loop() {
+  int sensorValues[4];  // Array to store water level readings from each sensor
+  
+  // Loop through each sensor pin and read sensor values
+  for (int i = 0; i < sensorCount; i++) {
+    sensorValues[i] = readSensor(sensorPins[i]);  // Call readSensor() function for each sensor
+  }
+
+  // Print water level readings
+  Serial.print("Water levels: ");
+  for (int i = 0; i < sensorCount; i++) {
+    Serial.print(sensorValues[i]);
+    if (i < sensorCount - 1) Serial.print(" ! ");  // Print separator for readability
+  }
+  Serial.println();  // New line after printing all sensor values
+
+  delay(500);  // Short delay before next loop iteration
+
+  // Logic to determine whether the relay should stay on or off
+  stayOn = 1;  // Assume the relay stays on unless a sensor value exceeds the threshold
+  for (int i = 0; i < sensorCount; i++) {
+    if (sensorValues[i] > threshold) {
+      stayOn = 0;  // If any sensor value exceeds threshold, turn the relay off
+      break;  // Exit the loop as relay decision is made
+    }
+  }
+
+  // Control the relay based on the stayOn variable
+  digitalWrite(relay, stayOn ? HIGH : LOW);  // Relay is on if stayOn is 1, off if it's 0
+}
+
+int readSensor(int sensorPin) {
+  digitalWrite(sensorPower, HIGH);    // Turn on sensor power
+  delay(10);                          // Small delay to stabilize sensor reading
+  int val = analogRead(sensorPin);    // Read the analog value from the sensor pin
+  digitalWrite(sensorPower, LOW);     // Turn off sensor power to save energy
+  return val;                         // Return the sensor value
+}
