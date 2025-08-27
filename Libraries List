@@ -1,0 +1,10 @@
+Steps to Install:
+  1. Open Arduino IDE
+  2. Go to Tools > Manage Libraries
+  3. In the Library Manager popup window, search for the library
+  4. Install the library AND its dependencies if listed
+
+List of Libraries Used:
+  1. Arduino_GigaDisplay_GFX
+  2. Arduino_USBHostMbed5
+  3. FATFileSystem
