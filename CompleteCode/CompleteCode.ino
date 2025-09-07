@@ -1,4 +1,9 @@
-//testing how the hell github works!
+//time
+#include "mbed.h"
+#include <mbed_mktime.h>
+
+constexpr unsigned long printInterval { 5000 };
+unsigned long printNow {};
 
 //display
 #include "Arduino_GigaDisplay_GFX.h"
@@ -27,8 +32,8 @@ USBHostMSD msd;
 mbed::FATFileSystem usb("usb");
 
 int logCount = 0;
-int days = 0;
-int hours = 0;
+// int days = 0;
+// int hours = 0;
 int logFrequency = (12 * 60 * 1000);  //how often data is logged [ms]
 
 //sensors
@@ -81,6 +86,8 @@ void logData();
 void setup() {
   Serial.begin(9600);  //set baud rate for the serial port between the PC and Arduino
 
+  RTCset(0,0,0,7,9,25);
+
   PH_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and PH sensor
   EC_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and EC sensor
 
@@ -108,6 +115,12 @@ void setup() {
 }
 
 void loop() {
+  // if (millis() > printNow) {
+  //       Serial.print("System Clock:          ");
+  //       Serial.println(getLocaltime());
+  //       printNow = millis() + printInterval;
+  //   }
+
   //for reading user commands
   if (Serial.available() > 0) {                //bc arduino cant do their job! (lets us read the message from the user)
     inputstring = Serial.readStringUntil(13);  //read the string until we see a <CR>
@@ -156,15 +169,36 @@ void loop() {
     logTempTime = millis();
   }
 
-  if ((millis() - timeTempCount) > 60 * 60 * 1000) {
-    // if ((millis() - timeTempCount) > 10*1000) {
-    hours++;
-    if (hours >= 24) {
-      days += 1;
-      hours -= 24;
-    }
-    timeTempCount = millis();
-  }
+  // if ((millis() - timeTempCount) > 60 * 60 * 1000) {
+  //   // if ((millis() - timeTempCount) > 10*1000) {
+  //   hours++;
+  //   if (hours >= 24) {
+  //     days += 1;
+  //     hours -= 24;
+  //   }
+  //   timeTempCount = millis();
+  // }
+}
+
+void RTCset(int sec, int min, int hour, int mday, int mon, int year)  // Set cpu RTC
+{    
+  tm t;
+            t.tm_sec = (sec);       // 0-59
+            t.tm_min = (min);        // 0-59
+            t.tm_hour = (hour);         // 0-23
+            t.tm_mday = (mday);   // 1-31
+            t.tm_mon = (mon);       // 0-11  "0" = Jan, -1 
+            t.tm_year = ((year)+100);   // year since 1900,  current year + 100 + 1900 = correct year
+            set_time(mktime(&t));       // set RTC clock                                 
+}
+
+String getLocaltime()
+{
+    char buffer[32];
+    tm t;
+    _rtc_localtime(time(NULL), &t, RTC_4_YEAR_LEAP_YEAR_SUPPORT);
+    strftime(buffer, 32, "%Y-%m-%d %k:%M:%S", &t);
+    return String(buffer);
 }
 
 void processInput() {
@@ -190,6 +224,8 @@ void processInput() {
     Serial.print(TDS);
     Serial.print("\nSalinity: ");
     Serial.print(Salinity);
+    Serial.print("\n");
+    Serial.println(getLocaltime());
 
     for (int i = 0; i < 4; i++) {
       sensorValues[i] = analogRead(i);  // Call readSensor() function for each sensor
@@ -224,27 +260,31 @@ void processInput() {
     Serial.print(idealEC);
   }
 
-  //command in looks like
-  //SETTIME,[days],[hours]
-  //ex. SETTIME,0,0
-  //ex. SETTIME,5,13
-  else if (inputstring.startsWith("SETTIME")) {
-    int seperator;
-
-    // Remove "SET TIME," from the input string
-    inputstring = inputstring.substring(first_comma + 1);
-    seperator = inputstring.indexOf(',');
-    days = inputstring.substring(0, seperator).toInt();
-
-    inputstring = inputstring.substring(seperator + 1);
-    seperator = inputstring.indexOf(',');
-    hours = inputstring.substring(0, seperator).toInt();
-
-    Serial.print("\nDays: ");
-    Serial.print(days);
-    Serial.print(", Hours: ");
-    Serial.print(hours);
+  else if (inputstring.startsWith("LOGDATA")) {  //if it begins with UPDATE or OUTPUT
+    logData();
   }
+
+  //command in looks like
+  // SETTIME,[days],[hours]
+  // ex. SETTIME,0,0
+  // ex. SETTIME,5,13
+  // else if (inputstring.startsWith("SETTIME")) {
+  //   int seperator;
+
+  //   // Remove "SET TIME," from the input string
+  //   inputstring = inputstring.substring(first_comma + 1);
+  //   seperator = inputstring.indexOf(',');
+  //   days = inputstring.substring(0, seperator).toInt();
+
+  //   inputstring = inputstring.substring(seperator + 1);
+  //   seperator = inputstring.indexOf(',');
+  //   hours = inputstring.substring(0, seperator).toInt();
+
+  //   Serial.print("\nDays: ");
+  //   Serial.print(days);
+  //   Serial.print(", Hours: ");
+  //   Serial.print(hours);
+  // }
 
   //could optimize
   else if (inputstring.startsWith("PUMP,MAIN,1")) {
@@ -276,26 +316,26 @@ void processInput() {
     digitalWrite(NutrientsPin, 0);
   }
 
-  else {
-    Serial.println("\nHere are the available commands:");
-    Serial.println("To set the ideal PH type:");
-    Serial.println("SETPH,(ideal PH value)");
-    Serial.println("To set the ideal EC type:");
-    Serial.println("SETEC,(ideal EC value)");
-    Serial.println("To set the clock type:");
-    Serial.println("SETTIME,[day],[hour]");
-    Serial.println("To manually operate the pumps:");
-    Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
-    Serial.println("PUMP,PH,UP - this will only turn on for a short time");
-    Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
-    Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
-    Serial.println("To get a system update of all current values type:");
-    Serial.println("OUTPUT");
-    Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
-    Serial.println("PH,(comamnd)");
-    Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
-    Serial.println("EC,(comamnd)\n");
-  }
+  // else {
+  //   Serial.println("\nHere are the available commands:");
+  //   Serial.println("To set the ideal PH type:");
+  //   Serial.println("SETPH,(ideal PH value)");
+  //   Serial.println("To set the ideal EC type:");
+  //   Serial.println("SETEC,(ideal EC value)");
+  //   Serial.println("To set the clock type:");
+  //   Serial.println("SETTIME,[day],[hour]");
+  //   Serial.println("To manually operate the pumps:");
+  //   Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
+  //   Serial.println("PUMP,PH,UP - this will only turn on for a short time");
+  //   Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
+  //   Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
+  //   Serial.println("To get a system update of all current values type:");
+  //   Serial.println("OUTPUT");
+  //   Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
+  //   Serial.println("PH,(comamnd)");
+  //   Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
+  //   Serial.println("EC,(comamnd)\n");
+  // }
 
   inputstring = "";  //clear the input string for next time
 }
@@ -429,13 +469,15 @@ void updateDisplay() {
   display.setTextSize(3);
   display.setTextColor(BLACK);
   display.setCursor(25, 434);
-  display.print("Time: ");
-  display.print(days);
-  display.print(" days, ");
-  display.print(hours);
-  display.print(" hours | ");
+  // display.print("Time: ");
+  // display.print(days);
+  // display.print(" days, ");
+  // display.print(hours);
+  // display.print(" hours | ");
   display.print(logCount);
-  display.print(" data logs");
+  display.print(" data logs   ");
+
+  display.print(getLocaltime());
 
   //overflow
   for (int i = 0; i < 4; i++) {
@@ -459,14 +501,22 @@ void logData() {
 
         logCount++;
         if (logCount == 1) {
-          fprintf(f, "%s", "Log, Days, Hours, PH, EC, TDS, Salinity\n");
+          fprintf(f, "%s", "Log count, Time, PH, EC, TDS, Salinity\n");
         }
         fprintf(f, "%d", logCount);
         fprintf(f, "%s", ",");
-        fprintf(f, "%d", days);
-        fprintf(f, "%s", ",");
-        fprintf(f, "%d", hours);
-        fprintf(f, "%s", ",");
+        struct tm t = getLocaltime();
+        fprintf(f, "%04d-%02d-%02d %02d:%02d:%02d\n",
+        t.tm_year + 1900,
+        t.tm_mon + 1,
+        t.tm_mday,
+        t.tm_hour,
+        t.tm_min,
+        t.tm_sec);
+        // fprintf(f, "%d", days);
+        // fprintf(f, "%s", ",");
+        // fprintf(f, "%d", hours);
+        // fprintf(f, "%s", ",");
         fprintf(f, "%.3f", PH);
         fprintf(f, "%s", ",");
         fprintf(f, "%.f", EC);
@@ -479,7 +529,6 @@ void logData() {
         fflush(f);
 
         fclose(f);
-
 
       } else {
         Serial.print("\nData log failed");
