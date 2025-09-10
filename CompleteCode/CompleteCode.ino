@@ -2,9 +2,6 @@
 #include "mbed.h"
 #include <mbed_mktime.h>
 
-constexpr unsigned long printInterval { 5000 };
-unsigned long printNow {};
-
 //display
 #include "Arduino_GigaDisplay_GFX.h"
 
@@ -32,14 +29,11 @@ USBHostMSD msd;
 mbed::FATFileSystem usb("usb");
 
 int logCount = 0;
-// int days = 0;
-// int hours = 0;
 int logFrequency = (12 * 60 * 1000);  //how often data is logged [ms]
 
 //sensors
 #define PH_Serial Serial4  //physical 3
 #define EC_Serial Serial3  //physical 2
-
 
 float idealPH = 6.5;  //default ideal value
 float idealEC = 675;  //default ideal value
@@ -115,11 +109,6 @@ void setup() {
 }
 
 void loop() {
-  // if (millis() > printNow) {
-  //       Serial.print("System Clock:          ");
-  //       Serial.println(getLocaltime());
-  //       printNow = millis() + printInterval;
-  //   }
 
   //for reading user commands
   if (Serial.available() > 0) {                //bc arduino cant do their job! (lets us read the message from the user)
@@ -251,31 +240,46 @@ void processInput() {
     Serial.print(idealEC);
   }
 
-  else if (inputstring.startsWith("LOGDATA")) {  //if it begins with UPDATE or OUTPUT
+  else if (inputstring.startsWith("DATALOG")) {  //if it begins with UPDATE or OUTPUT
     logData();
   }
 
   //command in looks like
-  // SETTIME,[days],[hours]
-  // ex. SETTIME,0,0
-  // ex. SETTIME,5,13
-  // else if (inputstring.startsWith("SETTIME")) {
-  //   int seperator;
+  // SETTIME,[year][month][day][hour][min][sec]
+  // ex. SETTIME,2025,12,25,9,0,0 for christmas morning!
+  else if (inputstring.startsWith("SETTIME")) {
+    int seperator;
 
-  //   // Remove "SET TIME," from the input string
-  //   inputstring = inputstring.substring(first_comma + 1);
-  //   seperator = inputstring.indexOf(',');
-  //   days = inputstring.substring(0, seperator).toInt();
+    // Remove "SET TIME," from the input string
+    inputstring = inputstring.substring(first_comma + 1);
+    seperator = inputstring.indexOf(',');
+    int year = inputstring.substring(0, seperator).toInt();
 
-  //   inputstring = inputstring.substring(seperator + 1);
-  //   seperator = inputstring.indexOf(',');
-  //   hours = inputstring.substring(0, seperator).toInt();
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int mon = inputstring.substring(0, seperator).toInt();
 
-  //   Serial.print("\nDays: ");
-  //   Serial.print(days);
-  //   Serial.print(", Hours: ");
-  //   Serial.print(hours);
-  // }
+    inputstring = inputstring.substring(first_comma + 1);
+    seperator = inputstring.indexOf(',');
+    int mday = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int hour = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(first_comma + 1);
+    seperator = inputstring.indexOf(',');
+    int min = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int sec = inputstring.substring(0, seperator).toInt();
+
+    Serial.print("\nTime set to: ");
+    Serial.print(getLocalTime());
+
+    RTCset(int sec, int min, int hour, int mday, int mon, int year)
+  }
 
   //could optimize
   else if (inputstring.startsWith("PUMP,MAIN,1")) {
@@ -307,26 +311,28 @@ void processInput() {
     digitalWrite(NutrientsPin, 0);
   }
 
-  // else {
-  //   Serial.println("\nHere are the available commands:");
-  //   Serial.println("To set the ideal PH type:");
-  //   Serial.println("SETPH,(ideal PH value)");
-  //   Serial.println("To set the ideal EC type:");
-  //   Serial.println("SETEC,(ideal EC value)");
-  //   Serial.println("To set the clock type:");
-  //   Serial.println("SETTIME,[day],[hour]");
-  //   Serial.println("To manually operate the pumps:");
-  //   Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
-  //   Serial.println("PUMP,PH,UP - this will only turn on for a short time");
-  //   Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
-  //   Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
-  //   Serial.println("To get a system update of all current values type:");
-  //   Serial.println("OUTPUT");
-  //   Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
-  //   Serial.println("PH,(comamnd)");
-  //   Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
-  //   Serial.println("EC,(comamnd)\n");
-  // }
+  else {
+    Serial.println("\nUnknown command entered, here are the available commands:");
+    Serial.println("To set the ideal PH type:");
+    Serial.println("SETPH,(ideal PH value)");
+    Serial.println("To set the ideal EC type:");
+    Serial.println("SETEC,(ideal EC value)");
+    Serial.println("To set the clock type:");
+    Serial.println("SETTIME,[year][month][day][hour][min][sec]");
+    Serial.println("To manually operate the pumps:");
+    Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
+    Serial.println("PUMP,PH,UP - this will only turn on for a short time");
+    Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
+    Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
+    Serial.println("To get a system update of all current values type:");
+    Serial.println("OUTPUT");
+    Serial.println("To get the system to log that instants data:");
+    Serial.println("DATALOG");
+    Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
+    Serial.println("PH,(comamnd)");
+    Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
+    Serial.println("EC,(comamnd)\n");
+  }
 
   inputstring = "";  //clear the input string for next time
 }
