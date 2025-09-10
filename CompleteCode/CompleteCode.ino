@@ -45,7 +45,7 @@ float idealPH = 6.5;  //default ideal value
 float idealEC = 675;  //default ideal value
 
 float idealPHThreshold = .3;                      //how much PH error is allowed (+_ .25)
-int pumpTime = 2000;                              //how long the pump doses at a time for [ms]
+int pumpTime = 5000;                              //how long the pump doses at a time for [ms]
 int sensorFrequency = (10 * 60 * 1000);           //how often more chemicals will be added (waits for them to disperse) [ms]
 int thresholdValues[5] = { 500, 500, 500, 500 };  //threshold for water level sensors
 
@@ -169,15 +169,6 @@ void loop() {
     logTempTime = millis();
   }
 
-  // if ((millis() - timeTempCount) > 60 * 60 * 1000) {
-  //   // if ((millis() - timeTempCount) > 10*1000) {
-  //   hours++;
-  //   if (hours >= 24) {
-  //     days += 1;
-  //     hours -= 24;
-  //   }
-  //   timeTempCount = millis();
-  // }
 }
 
 void RTCset(int sec, int min, int hour, int mday, int mon, int year)  // Set cpu RTC
@@ -197,7 +188,7 @@ String getLocaltime()
     char buffer[32];
     tm t;
     _rtc_localtime(time(NULL), &t, RTC_4_YEAR_LEAP_YEAR_SUPPORT);
-    strftime(buffer, 32, "%Y-%m-%d %k:%M:%S", &t);
+    strftime(buffer, 32, "%Y-%m-%d %H:%M:%S", &t);
     return String(buffer);
 }
 
@@ -469,11 +460,6 @@ void updateDisplay() {
   display.setTextSize(3);
   display.setTextColor(BLACK);
   display.setCursor(25, 434);
-  // display.print("Time: ");
-  // display.print(days);
-  // display.print(" days, ");
-  // display.print(hours);
-  // display.print(" hours | ");
   display.print(logCount);
   display.print(" data logs   ");
 
@@ -503,28 +489,13 @@ void logData() {
         if (logCount == 1) {
           fprintf(f, "%s", "Log count, Time, PH, EC, TDS, Salinity\n");
         }
-        fprintf(f, "%d", logCount);
-        fprintf(f, "%s", ",");
-        struct tm t = getLocaltime();
-        fprintf(f, "%04d-%02d-%02d %02d:%02d:%02d\n",
-        t.tm_year + 1900,
-        t.tm_mon + 1,
-        t.tm_mday,
-        t.tm_hour,
-        t.tm_min,
-        t.tm_sec);
-        // fprintf(f, "%d", days);
-        // fprintf(f, "%s", ",");
-        // fprintf(f, "%d", hours);
-        // fprintf(f, "%s", ",");
-        fprintf(f, "%.3f", PH);
-        fprintf(f, "%s", ",");
-        fprintf(f, "%.f", EC);
-        fprintf(f, "%s", ",");
-        fprintf(f, "%.f", TDS);
-        fprintf(f, "%s", ",");
-        fprintf(f, "%.2f", Salinity);
-        fprintf(f, "%s", "\n");
+        fprintf(f, "%d,", logCount);
+        String ts = getLocaltime();
+        fprintf(f, "%s,", ts.c_str()); 
+        fprintf(f, "%.3f,", PH);
+        fprintf(f, "%.f,", EC);
+        fprintf(f, "%.f,", TDS);
+        fprintf(f, "%.2f\n", Salinity);
 
         fflush(f);
 
