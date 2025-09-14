@@ -36,11 +36,11 @@ int logFrequency = (12 * 60 * 1000);  //how often data is logged [ms]
 #define EC_Serial Serial3  //physical 2
 
 float idealPH = 6.5;  //default ideal value
-float idealEC = 675;  //default ideal value
+float idealEC = 500;  //default ideal value
 
 float idealPHThreshold = .3;                      //how much PH error is allowed (+_ .25)
-int pumpTime = 5000;                              //how long the pump doses at a time for [ms]
-int sensorFrequency = (10 * 60 * 1000);           //how often more chemicals will be added (waits for them to disperse) [ms]
+int pumpTime = (3 * 1000);                              //how long the pump doses at a time for [ms]
+int sensorFrequency = (12 * 60 * 1000);           //how often more chemicals will be added (waits for them to disperse) [ms]
 int thresholdValues[5] = { 500, 500, 500, 500 };  //threshold for water level sensors
 
 int reservoirSensor = A5;
@@ -80,7 +80,7 @@ void logData();
 void setup() {
   Serial.begin(9600);  //set baud rate for the serial port between the PC and Arduino
 
-  RTCset(0,0,0,7,9,25);
+  RTCset(25,9,1,12,0,0);
 
   PH_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and PH sensor
   EC_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and EC sensor
@@ -106,6 +106,8 @@ void setup() {
   delay(500);
 
   Serial.print("\nReady!\n");
+
+  logData();
 }
 
 void loop() {
@@ -133,6 +135,7 @@ void loop() {
     }
   }
 
+
   if ((millis() - floodingTempTime) > floodFrequency) {
     checkFlooding();
     floodingTempTime = millis();
@@ -157,7 +160,6 @@ void loop() {
     logData();
     logTempTime = millis();
   }
-
 }
 
 void RTCset(int sec, int min, int hour, int mday, int mon, int year)  // Set cpu RTC
@@ -244,9 +246,13 @@ void processInput() {
     logData();
   }
 
+  else if (inputstring.startsWith("REGULATE")) {  //if it begins with UPDATE or OUTPUT
+    regulateLevels();
+  }
+
   //command in looks like
   // SETTIME,[year][month][day][hour][min][sec]
-  // ex. SETTIME,2025,12,25,9,0,0 for christmas morning!
+  // ex. SETTIME,25,12,25,9,0,0 for christmas morning!
   else if (inputstring.startsWith("SETTIME")) {
     int seperator;
 
@@ -257,9 +263,9 @@ void processInput() {
 
     inputstring = inputstring.substring(seperator + 1);
     seperator = inputstring.indexOf(',');
-    int mon = inputstring.substring(0, seperator).toInt();
+    int mon = inputstring.substring(0, seperator).toInt() - 1;
 
-    inputstring = inputstring.substring(first_comma + 1);
+    inputstring = inputstring.substring(seperator + 1);
     seperator = inputstring.indexOf(',');
     int mday = inputstring.substring(0, seperator).toInt();
 
@@ -267,7 +273,7 @@ void processInput() {
     seperator = inputstring.indexOf(',');
     int hour = inputstring.substring(0, seperator).toInt();
 
-    inputstring = inputstring.substring(first_comma + 1);
+    inputstring = inputstring.substring(seperator + 1);
     seperator = inputstring.indexOf(',');
     int min = inputstring.substring(0, seperator).toInt();
 
@@ -275,10 +281,10 @@ void processInput() {
     seperator = inputstring.indexOf(',');
     int sec = inputstring.substring(0, seperator).toInt();
 
-    Serial.print("\nTime set to: ");
-    Serial.print(getLocalTime());
+    RTCset(sec, min, hour, mday, mon, year);
 
-    RTCset(int sec, int min, int hour, int mday, int mon, int year)
+    Serial.print("\nTime set to: ");
+    Serial.print(getLocaltime());
   }
 
   //could optimize
@@ -318,7 +324,7 @@ void processInput() {
     Serial.println("To set the ideal EC type:");
     Serial.println("SETEC,(ideal EC value)");
     Serial.println("To set the clock type:");
-    Serial.println("SETTIME,[year][month][day][hour][min][sec]");
+    Serial.println("SETTIME,[year],[month],[day],[hour],[min],[sec]");
     Serial.println("To manually operate the pumps:");
     Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
     Serial.println("PUMP,PH,UP - this will only turn on for a short time");
@@ -328,6 +334,8 @@ void processInput() {
     Serial.println("OUTPUT");
     Serial.println("To get the system to log that instants data:");
     Serial.println("DATALOG");
+    Serial.println("To get the system to regulate levels at that instant:");
+    Serial.println("REGULATE");
     Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
     Serial.println("PH,(comamnd)");
     Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
