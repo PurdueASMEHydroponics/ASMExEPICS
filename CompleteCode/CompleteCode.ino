@@ -1,9 +1,30 @@
+//user options
+int displayFrequency = (2 * 1000);  //how often the display is updated [ms]
+int logFrequency = (12 * 60 * 1000);  //how often data is logged [ms]
+
+float idealPH = 7.75;  //default ideal value
+float idealEC = 500;  //default ideal value
+
+float idealPHThreshold = .3;                      //how much PH error is allowed (+_ .25)
+int pumpTime = (3 * 1000);                              //how long the pump doses at a time for [ms]
+int sensorFrequency = (12 * 60 * 1000);           //how often more chemicals will be added (waits for them to disperse) [ms]
+int thresholdValues[5] = { 800, 800, 800, 800 };  //threshold for water level sensors
+
+int floodFrequency = (5 * 1000);  //how often to check if system is flooding
+
+//pin outs
+int displaySwitchPin = 50;
+
+int reservoirSensor = A5;
+
+int pumpPin = 5;       //pin pump relay is on
+int PHUpPin = 3;       //pin phUp pump relay is on
+int PHDownPin = 2;     //pin phDown pump relay is on
+int NutrientsPin = 4;  //pin nutrients pump relay is on
+
 //time
 #include "mbed.h"
 #include <mbed_mktime.h>
-
-constexpr unsigned long printInterval { 5000 };
-unsigned long printNow {};
 
 //display
 #include "Arduino_GigaDisplay_GFX.h"
@@ -20,9 +41,6 @@ GigaDisplay_GFX display;  // create the object
 #define WHITE 0xFFFF
 #define TAN 0xd591
 
-int displaySwitchPin = 50;
-int displayFrequency = (2 * 1000);  //how often the display is updated [ms]
-
 //storage
 #include <Arduino_USBHostMbed5.h>
 #include <DigitalOut.h>
@@ -32,38 +50,19 @@ USBHostMSD msd;
 mbed::FATFileSystem usb("usb");
 
 int logCount = 0;
-// int days = 0;
-// int hours = 0;
-int logFrequency = (12 * 60 * 1000);  //how often data is logged [ms]
 
 //sensors
 #define PH_Serial Serial4  //physical 3
 #define EC_Serial Serial3  //physical 2
-
-
-float idealPH = 6.5;  //default ideal value
-float idealEC = 675;  //default ideal value
-
-float idealPHThreshold = .3;                      //how much PH error is allowed (+_ .25)
-int pumpTime = 5000;                              //how long the pump doses at a time for [ms]
-int sensorFrequency = (10 * 60 * 1000);           //how often more chemicals will be added (waits for them to disperse) [ms]
-int thresholdValues[5] = { 500, 500, 500, 500 };  //threshold for water level sensors
-
-int reservoirSensor = A5;
-
-int floodFrequency = (5 * 1000);  //how often to check if system is flooding
-
-int pumpPin = 1;       //pin pump relay is on
-int PHUpPin = 3;       //pin phUp pump relay is on
-int PHDownPin = 2;     //pin phDown pump relay is on
-int NutrientsPin = 4;  //pin nutrients pump relay is on
 
 String inputstring = "";      //a string to hold incoming data from the PC
 String PH_sensorstring = "";  //a string to hold the data from the PH sensor
 String EC_sensorstring = "";  //a string to hold the data from the EC sensor
 
 float PH;  //used to hold a floating point number that is the pH
+float PHRunning[5] = {-1,-1,-1,-1,-1};
 float EC;  //used to hold a floating point number that is the EC
+float ECRunning[5] = {-1,-1,-1,-1,-1};
 float TDS;
 float Salinity;
 bool Flooding = false;  //system flooding status
@@ -85,9 +84,6 @@ void logData();
 
 void setup() {
   Serial.begin(9600);  //set baud rate for the serial port between the PC and Arduino
-
-  RTCset(0,0,0,7,9,25);
-
   PH_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and PH sensor
   EC_Serial.begin(9600);  //set baud rate for the serial port between the Arduino and EC sensor
 
@@ -111,16 +107,10 @@ void setup() {
 
   delay(500);
 
-  Serial.print("\nReady!\n");
+  Serial.print("\nReady!");
 }
 
 void loop() {
-  // if (millis() > printNow) {
-  //       Serial.print("System Clock:          ");
-  //       Serial.println(getLocaltime());
-  //       printNow = millis() + printInterval;
-  //   }
-
   //for reading user commands
   if (Serial.available() > 0) {                //bc arduino cant do their job! (lets us read the message from the user)
     inputstring = Serial.readStringUntil(13);  //read the string until we see a <CR>
@@ -168,11 +158,9 @@ void loop() {
     logData();
     logTempTime = millis();
   }
-
 }
 
-void RTCset(int sec, int min, int hour, int mday, int mon, int year)  // Set cpu RTC
-{    
+void RTCset(int sec, int min, int hour, int mday, int mon, int year) { // Set cpu RTC    
   tm t;
             t.tm_sec = (sec);       // 0-59
             t.tm_min = (min);        // 0-59
@@ -183,8 +171,7 @@ void RTCset(int sec, int min, int hour, int mday, int mon, int year)  // Set cpu
             set_time(mktime(&t));       // set RTC clock                                 
 }
 
-String getLocaltime()
-{
+String getLocaltime() {
     char buffer[32];
     tm t;
     _rtc_localtime(time(NULL), &t, RTC_4_YEAR_LEAP_YEAR_SUPPORT);
@@ -220,7 +207,7 @@ void processInput() {
 
     for (int i = 0; i < 4; i++) {
       sensorValues[i] = analogRead(i);  // Call readSensor() function for each sensor
-      Serial.print("\n Sensor ");
+      Serial.print("\nSensor ");
       Serial.print(i);
       Serial.print(" - ");
       Serial.print(sensorValues[i]);
@@ -229,12 +216,12 @@ void processInput() {
     if (!digitalRead(reservoirSensor)) {
       Serial.print("\nReservoir sensor reads flooding\n");
     } else {
-      Serial.print("Reservoir sensor reads NOT flooding\n");
+      Serial.print("\nReservoir sensor reads NOT flooding\n");
     }
   }
 
   //command in looks like SETPH,6.5
-  else if (inputstring.startsWith("SETPH")) {  //if it begins with UPDATE or OUTPUT
+  else if (inputstring.startsWith("SETPH")) {
     inputstring = inputstring.substring(first_comma + 1);
     idealPH = inputstring.toFloat();
 
@@ -243,7 +230,7 @@ void processInput() {
   }
 
   //command in looks like SETEC,600
-  else if (inputstring.startsWith("SETEC")) {  //if it begins with UPDATE or OUTPUT
+  else if (inputstring.startsWith("SETEC")) {
     inputstring = inputstring.substring(first_comma + 1);
     idealEC = inputstring.toFloat();
 
@@ -251,82 +238,105 @@ void processInput() {
     Serial.print(idealEC);
   }
 
-  else if (inputstring.startsWith("LOGDATA")) {  //if it begins with UPDATE or OUTPUT
+  else if (inputstring.startsWith("DATALOG")) {
     logData();
   }
 
-  //command in looks like
-  // SETTIME,[days],[hours]
-  // ex. SETTIME,0,0
-  // ex. SETTIME,5,13
-  // else if (inputstring.startsWith("SETTIME")) {
-  //   int seperator;
+  else if (inputstring.startsWith("REGULATE")) {
+    regulateLevels();
+  }
 
-  //   // Remove "SET TIME," from the input string
-  //   inputstring = inputstring.substring(first_comma + 1);
-  //   seperator = inputstring.indexOf(',');
-  //   days = inputstring.substring(0, seperator).toInt();
+  // Command in looks like
+  // SETTIME,[year][month][day][hour][min][sec]
+  // ex. SETTIME,25,12,25,9,0,0 for christmas morning!
+  else if (inputstring.startsWith("SETTIME")) {
+    int seperator;
 
-  //   inputstring = inputstring.substring(seperator + 1);
-  //   seperator = inputstring.indexOf(',');
-  //   hours = inputstring.substring(0, seperator).toInt();
+    // Remove "SET TIME," from the input string
+    inputstring = inputstring.substring(first_comma + 1);
+    seperator = inputstring.indexOf(',');
+    int year = inputstring.substring(0, seperator).toInt();
 
-  //   Serial.print("\nDays: ");
-  //   Serial.print(days);
-  //   Serial.print(", Hours: ");
-  //   Serial.print(hours);
-  // }
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int mon = inputstring.substring(0, seperator).toInt() - 1;
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int mday = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int hour = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int min = inputstring.substring(0, seperator).toInt();
+
+    inputstring = inputstring.substring(seperator + 1);
+    seperator = inputstring.indexOf(',');
+    int sec = inputstring.substring(0, seperator).toInt();
+
+    RTCset(sec, min, hour, mday, mon, year);
+
+    Serial.print("\nTime set to: ");
+    Serial.print(getLocaltime());
+  }
 
   //could optimize
   else if (inputstring.startsWith("PUMP,MAIN,1")) {
-    Serial.print("Turning pump on\n");
+    Serial.print("\nTurning pump on");
     digitalWrite(pumpPin, 1);
   } else if (inputstring.startsWith("PUMP,MAIN,0")) {
-    Serial.print("Turning pump off\n");
+    Serial.print("\nTurning pump off");
     digitalWrite(pumpPin, 0);
   }
 
   else if (inputstring.startsWith("PUMP,PH,UP")) {
-    Serial.print("Adding PH up\n");
+    Serial.print("\nAdding PH up");
     digitalWrite(PHUpPin, 1);
     delay(pumpTime);
     digitalWrite(PHUpPin, 0);
   }
 
   else if (inputstring.startsWith("PUMP,PH,DOWN")) {
-    Serial.print("Adding PH down\n");
+    Serial.print("\nAdding PH down");
     digitalWrite(PHDownPin, 1);
     delay(pumpTime);
     digitalWrite(PHDownPin, 0);
   }
 
   else if (inputstring.startsWith("PUMP,NUTRIENTS")) {
-    Serial.print("Adding nutrients\n");
+    Serial.print("\nAdding nutrients");
     digitalWrite(NutrientsPin, 1);
     delay(pumpTime);
     digitalWrite(NutrientsPin, 0);
   }
 
-  // else {
-  //   Serial.println("\nHere are the available commands:");
-  //   Serial.println("To set the ideal PH type:");
-  //   Serial.println("SETPH,(ideal PH value)");
-  //   Serial.println("To set the ideal EC type:");
-  //   Serial.println("SETEC,(ideal EC value)");
-  //   Serial.println("To set the clock type:");
-  //   Serial.println("SETTIME,[day],[hour]");
-  //   Serial.println("To manually operate the pumps:");
-  //   Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
-  //   Serial.println("PUMP,PH,UP - this will only turn on for a short time");
-  //   Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
-  //   Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
-  //   Serial.println("To get a system update of all current values type:");
-  //   Serial.println("OUTPUT");
-  //   Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
-  //   Serial.println("PH,(comamnd)");
-  //   Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
-  //   Serial.println("EC,(comamnd)\n");
-  // }
+  else {
+    Serial.println("\nUnknown command entered, here are the available commands:");
+    Serial.println("To set the ideal PH type:");
+    Serial.println("SETPH,(ideal PH value)");
+    Serial.println("To set the ideal EC type:");
+    Serial.println("SETEC,(ideal EC value)");
+    Serial.println("To set the clock type:");
+    Serial.println("SETTIME,[year],[month],[day],[hour],[min],[sec]");
+    Serial.println("To manually operate the pumps:");
+    Serial.println("PUMP,MAIN,[1 or 0] - this will change the state until another command or the system updates it");
+    Serial.println("PUMP,PH,UP - this will only turn on for a short time");
+    Serial.println("PUMP,PH,DOWN - this will only turn on for a short time");
+    Serial.println("PUMP,NUTRIENTS - this will only turn on for a short time");
+    Serial.println("To get a system update of all current values type:");
+    Serial.println("OUTPUT");
+    Serial.println("To get the system to log that instants data:");
+    Serial.println("DATALOG");
+    Serial.println("To get the system to regulate levels at that instant:");
+    Serial.println("REGULATE");
+    Serial.println("To send commands to the PH sensor (found in the guidebook or atlas scientific pdf) type:");
+    Serial.println("PH,(comamnd)");
+    Serial.println("To send commands to the EC sensor (found in the guidebook or atlas scientific pdf) type:");
+    Serial.println("EC,(comamnd)\n");
+  }
 
   inputstring = "";  //clear the input string for next time
 }
@@ -390,23 +400,70 @@ void checkFlooding() {
   } else {
     digitalWrite(pumpPin, 1);
   }
-
-  // if (!digitalRead(reservoirSensor)) {
-  //   Serial.print("\nReservoir sensor reads flooding\n");
-  // }
-  // else {
-  //   Serial.print("Reservoir sensor reads NOT flooding\n");
-  // }
 }
 
 void regulateLevels() {
+  //ph average
+  for (int i = 4; i > 0; i--) {
+    PHRunning[i] = PHRunning[i - 1];
+  }
+  PHRunning[0] = PH;
+
+  float sumPH = 0;
+  for (int i = 0; i < 5; i++) {
+    sumPH += PHRunning[i];
+  }
+  float PHAvg = sumPH / 5;
+
+  bool badPH = 0;
+  for (int i = 0; i < 5; i++) {
+    if (fabs(PHRunning[i] + 1) < .00001) {
+      badPH = 1;
+    }
+  }
+  if (badPH) {
+    Serial.print("\nNot enough PH data yet!");
+  }
+
+
+  //ec average
+  for (int i = 4; i > 0; i--) {
+    ECRunning[i] = ECRunning[i - 1];
+  }
+  ECRunning[0] = EC;
+
+  float sumEC = 0;
+  for (int i = 0; i < 5; i++) {
+    sumEC += ECRunning[i];
+  }
+  float ECAvg = sumEC / 5;
+
+  bool badEC = 0;
+  for (int i = 0; i < 5; i++) {
+    if (fabs(ECRunning[i] + 1) < .00001) {
+      badEC = 1;
+    }
+  }
+  if (badEC) {
+    Serial.print("\nNot enough EC data yet!");
+  }
+
+
   //regulating ph section
-  if (PH < (idealPH - .5 * idealPHThreshold)) {
+  if ((PHAvg < (idealPH - .5 * idealPHThreshold)) && !badPH) {
+    Serial.print("\nPH Goal : ");
+    Serial.print(idealPH);
+    Serial.print("\nPH Average : ");
+    Serial.print(PHAvg);
     Serial.print("\nIncreasing PH");
     digitalWrite(PHUpPin, HIGH);
     delay(pumpTime);
     digitalWrite(PHUpPin, LOW);
-  } else if (PH > (idealPH + .5 * idealPHThreshold)) {
+  } else if (PHAvg > (idealPH + .5 * idealPHThreshold) && !badPH) {
+    Serial.print("\nPH Goal : ");
+    Serial.print(idealPH);
+    Serial.print("\nPH Average : ");
+    Serial.print(PHAvg);
     Serial.print("\nDecreasing PH");
     digitalWrite(PHDownPin, HIGH);
     delay(pumpTime);
@@ -414,7 +471,11 @@ void regulateLevels() {
   }
 
   //regulating EC section
-  if (EC < idealEC) {
+  if ((ECAvg < idealEC) && !badEC) {
+    Serial.print("\nEC Goal : ");
+    Serial.print(idealEC);
+    Serial.print("\nEC Average : ");
+    Serial.print(ECAvg);
     Serial.print("\nAdding nutrients");
     digitalWrite(NutrientsPin, HIGH);
     delay(pumpTime);
