@@ -7,4 +7,7 @@ Steps to Install:
 List of Libraries Used:
   1. Arduino_GigaDisplay_GFX
   2. Arduino_USBHostMbed5
-  3. FATFileSystem
+  3. DigitalOut
+  4. FATFileSystem
+  5. mbed
+  6. mbed_mktime
