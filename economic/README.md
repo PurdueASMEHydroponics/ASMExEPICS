@@ -2,7 +2,7 @@
 
 ## 1. Overview
 <p align="center">
-  <img src="economic/docs/epics_asme_logo.jpg" alt="LOGO" width="20%">
+  <img src="documentation/epics_asme_logo.jpg" alt="LOGO" width="20%">
 </p>
 
 Repo for electrical for now, but structures can be included as well. Modify the README as you contribute.
@@ -31,9 +31,9 @@ Required to modify/update firmware; search for a download tutorial
 
 ## 3. Directory
 ```text
-├── ARCHIVE/              # Old files
-├── economic/             # economic project repository
-  ├── altium_files/       # .zip file to download onto Altium
-  ├── docs/               # Documentation/guides
-  ├── firmware/           # Arduio scripts
-  ├── PCB_fab/            # JLPCB fabrication packages
+repository-name/
+├── altium_files/       # .zip file to download onto Altium
+├── docs/               # Documentation/guides
+├── fabrication pack/   # JLPCB fabrication packages
+├── firmware/           # Arduio scripts
+└── README.md           # Project overview and usage guidelines
